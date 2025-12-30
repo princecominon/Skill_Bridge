@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// We use the specific imports for the library you have installed
 import { GoogleGenAI, Type } from '@google/genai'; 
 import { MOCK_SYLLABUS } from '../constants';
 import { QuizQuestion } from '../types';
@@ -22,8 +21,7 @@ const QuizSection: React.FC = () => {
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [recoverySuggestion, setRecoverySuggestion] = useState<string | null>(null);
 
-  // --- FIX 1: TS Ignore for environment variable ---
-  // The (import.meta as any) trick stops the "Property 'env' does not exist" error
+  // Safely access env variable
   const API_KEY = (import.meta as any).env.VITE_GEMINI_API_KEY;
 
   const generateQuiz = async (subject: string) => {
@@ -38,12 +36,11 @@ const QuizSection: React.FC = () => {
     setGameState('loading');
 
     try {
-      // Initialize the AI with your key
       const ai = new GoogleGenAI({ apiKey: API_KEY });
       
       const response = await ai.models.generateContent({
         model: 'gemini-1.5-flash', 
-        contents: `Generate a 5-question multiple choice quiz for the topic: "${subject}". Focus on core concepts and their practical industry applications.`,
+        contents: `Generate a 5-question multiple choice quiz for the topic: "${subject}". Return ONLY valid JSON.`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -68,9 +65,14 @@ const QuizSection: React.FC = () => {
         }
       });
 
-      // --- FIX 2: Handle response.text as a PROPERTY, not a function ---
-      // Your error log showed that 'text' is a String, so we don't use ()
-      const rawText = response.text || '{"questions": []}';
+      // --- CRITICAL FIX: Clean the data before parsing ---
+      let rawText = response.text || '{"questions": []}';
+      
+      // Remove ```json and ``` marks if the AI adds them
+      rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      console.log("Cleaned JSON:", rawText); // Debugging log
+
       const data = JSON.parse(rawText);
       
       if (data.questions && data.questions.length > 0) {
@@ -110,6 +112,18 @@ const QuizSection: React.FC = () => {
       setUserAnswer(null);
       setIsLocked(false);
     } else {
+      // --- SAVE RESULT LOGIC (Option B) ---
+      const newResult = {
+        id: Date.now(),
+        topic: selectedSubject,
+        score: score,
+        totalQuestions: questions.length,
+        date: new Date().toLocaleDateString()
+      };
+
+      const existingHistory = JSON.parse(localStorage.getItem('sb_activity') || '[]');
+      localStorage.setItem('sb_activity', JSON.stringify([newResult, ...existingHistory]));
+      
       setGameState('result');
     }
   };
@@ -136,7 +150,6 @@ const QuizSection: React.FC = () => {
         contents: `I am a college student struggling with: "${recoveryTopic}". Provide a short 3-step recovery plan.`,
       });
       
-      // --- FIX 3: Same fix here for recovery text ---
       setRecoverySuggestion(response.text || "Couldn't generate a plan.");
     
     } catch (error) {
