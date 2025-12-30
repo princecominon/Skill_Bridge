@@ -1,0 +1,8 @@
+{
+  "name": "Skill Bridge",
+  "description": "A comprehensive mobile-first PWA helping college students bridge the gap between university syllabus and industry-standard skills.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
