@@ -39,7 +39,7 @@ const QuizSection: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: API_KEY });
       
       const response = await ai.models.generateContent({
-        model: 'gemini-pro', 
+        model: 'gemini-3-flash-preview', 
         contents: `Generate a 5-question multiple choice quiz for the topic: "${subject}". Return ONLY valid JSON.`,
         config: {
           responseMimeType: "application/json",
