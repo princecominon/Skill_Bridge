@@ -146,7 +146,7 @@ const QuizSection: React.FC = () => {
     try {
       const ai = new GoogleGenAI({ apiKey: API_KEY });
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: `I am a college student struggling with: "${recoveryTopic}". Provide a short 3-step recovery plan.`,
       });
       
