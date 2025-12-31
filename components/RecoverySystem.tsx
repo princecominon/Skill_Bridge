@@ -24,7 +24,7 @@ const RecoverySystem: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: API_KEY });
       
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-pro',
         contents: `I am a college student struggling with the topic: "${topic}". Please provide a short 3-step recovery plan to understand this topic, including one real-world industry application. Keep it concise for mobile reading.`,
       });
 
